@@ -21,12 +21,6 @@ alt_u32 end_conv_grayscale = 0;
 alt_u32 start_sobel_threshold = 0;
 alt_u32 end_sobel_threshold = 0;
 
-short *sobel_x_result;
-short *sobel_y_result;
-unsigned char *sobel_result;
-int sobel_width;
-int sobel_height;
-
 int main()
 {
   void *buffer1,*buffer2,*buffer3,*buffer4;
@@ -50,15 +44,6 @@ int main()
   cam_set_image_pointer(3,buffer4);
   enable_continues_mode();
   init_sobel_arrays(cam_get_xsize()>>1,cam_get_ysize());
-
-  sobel_width = cam_get_xsize()>>1;
-  sobel_height = cam_get_ysize();
-  sobel_x_result = (short *)malloc(sobel_width*sobel_height*sizeof(short));
-  sobel_y_result = (short *)malloc(sobel_width*sobel_height*sizeof(short));
-  for (int loop = 0 ; loop < sobel_width*sobel_height ; loop++) {
-  		sobel_x_result[loop] = 0;
-  		sobel_y_result[loop] = 0;
-  }
 
   do {
 	  if (new_image_available() != 0) {
@@ -159,34 +144,10 @@ int main()
 
                        grayscale = get_grayscale_picture();
 
-                       int x,y,arrayindex;
-                       short sum,value;
-
                        start_sobel_x = alt_timestamp();
                        start_sobel_y = alt_timestamp();
                        start_sobel_threshold = alt_timestamp();
-                       for (y = 1 ; y < (sobel_height-1) ; y++) {
-                    	   for (x = 1 ; x < (sobel_width-1) ; x++) {
-                    		   arrayindex = (y*sobel_width)+x;
-                    		   value =
-                      				   1 * grayscale[(y-1)*sobel_width+(x-1)] +
-									   2 * grayscale[(y-1)*sobel_width+(x)] +
-									   1 * grayscale[(y-1)*sobel_width+(x+1)] +
-									   -1 * grayscale[(y+1)*sobel_width+(x-1)] +
-									   -2 * grayscale[(y+1)*sobel_width+(x)] +
-									   -1 * grayscale[(y+1)*sobel_width+(x+1)];
-                    		   sum = (value < 0) ? -value : value;
-                    		   value =
-                      				   -1 * grayscale[(y-1)*sobel_width+(x-1)] +
-									   1 * grayscale[(y-1)*sobel_width+(x+1)] +
-									   -2 * grayscale[(y)*sobel_width+(x-1)]   +
-									   2 * grayscale[(y)*sobel_width+(x+1)]   +
-									   -1 * grayscale[(y+1)*sobel_width+(x-1)] +
-                      		 			1 * grayscale[(y+1)*sobel_width+(x+1)];
-                    		   sum += (value < 0) ? -value : value;
-                    		   sobel_result[arrayindex] = (sum > 128) ? 0xFF : 0;
-                    	   }
-                       }
+                       sobel_complete(grayscale, 128);
                        end_sobel_y = alt_timestamp();
                        end_sobel_x = alt_timestamp();
                        end_sobel_threshold = alt_timestamp();

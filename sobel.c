@@ -134,6 +134,31 @@ void sobel_threshold(short threshold) {
 		}
 	}
 }
+void sobel_complete(unsigned char *source, short threshold){
+	int x,y;
+	short sum,value;
+	for (y = 1 ; y < (sobel_height-1) ; y++) {
+		for (x = 1 ; x < (sobel_width-1) ; x++) {
+			value =
+					1 * source[(y-1)*sobel_width+(x-1)] +
+					2 * source[(y-1)*sobel_width+(x)] +
+					1 * source[(y-1)*sobel_width+(x+1)] +
+					-1 * source[(y+1)*sobel_width+(x-1)] +
+					-2 * source[(y+1)*sobel_width+(x)] +
+					-1 * source[(y+1)*sobel_width+(x+1)];
+			sum = (value < 0) ? -value : value;
+			value =
+					-1 * source[(y-1)*sobel_width+(x-1)] +
+					1 * source[(y-1)*sobel_width+(x+1)] +
+					-2 * source[(y)*sobel_width+(x-1)]   +
+					2 * source[(y)*sobel_width+(x+1)]   +
+					-1 * source[(y+1)*sobel_width+(x-1)] +
+					1 * source[(y+1)*sobel_width+(x+1)];
+			sum += (value < 0) ? -value : value;
+			sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
+		}
+	}
+}
 
 unsigned short *GetSobel_rgb() {
 	return sobel_rgb565;
