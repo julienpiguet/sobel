@@ -27,7 +27,7 @@ void init_sobel_arrays(int width , int height) {
 	int loop;
 	sobel_width = width;
 	sobel_height = height;
-	printf("Sobel size: %d x %d = %d pixel", width, height, width*height);
+	printf("Sobel size: %d x %d = %d pixel\n", width, height, width*height);
 	if (sobel_x_result != NULL)
 		free(sobel_x_result);
 	sobel_x_result = (short *)malloc(width*height*sizeof(short));
@@ -53,14 +53,14 @@ short sobel_mac( unsigned char *pixels,
                  int y,
                  const char *filter,
                  unsigned int width ) {
-   short dy,dx;
-   short result = 0;
-   for (dy = -1 ; dy < 2 ; dy++) {
-      for (dx = -1 ; dx < 2 ; dx++) {
-         result += filter[(dy+1)*3+(dx+1)]*
-                   pixels[(y+dy)*width+(x+dx)];
-      }
-   }
+	short dy;
+	short result = 0;
+	for (dy = -1 ; dy < 2 ; dy++) {
+		result +=
+				filter[(dy+1)*3+0] * pixels[(y+dy)*width+(x-1)] +
+	         	filter[(dy+1)*3+1] * pixels[(y+dy)*width+(x)] +
+				filter[(dy+1)*3+2] * pixels[(y+dy)*width+(x+1)];
+	}
    return result;
 }
 
