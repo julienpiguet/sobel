@@ -23,6 +23,7 @@ alt_u32 end_sobel_threshold = 0;
 
 short *sobel_x_result;
 short *sobel_y_result;
+unsigned char *sobel_result;
 int sobel_width;
 int sobel_height;
 
@@ -158,47 +159,36 @@ int main()
 
                        grayscale = get_grayscale_picture();
 
-                       int x,y;
+                       int x,y,arrayindex;
+                       short sum,value;
+
                        start_sobel_x = alt_timestamp();
-                       for (y = 1 ; y < (sobel_height-1) ; y++) {
-                    	   for (x = 1 ; x < (sobel_width-1) ; x++) {
-                    		   sobel_x_result[y*sobel_width+x] =
-                    				   -1 * grayscale[(y-1)*sobel_width+(x-1)] +
-									   0 * grayscale[(y-1)*sobel_width+(x)]   +
-									   1 * grayscale[(y-1)*sobel_width+(x+1)] +
-
-									   -2 * grayscale[(y)*sobel_width+(x-1)]   +
-									   0 * grayscale[(y)*sobel_width+(x)]     +
-									   2 * grayscale[(y)*sobel_width+(x+1)]   +
-
-									   -1 * grayscale[(y+1)*sobel_width+(x-1)] +
-									   0 * grayscale[(y+1)*sobel_width+(x)]   +
-									   1 * grayscale[(y+1)*sobel_width+(x+1)];
-                    	   }
-                       }
-                       end_sobel_x = alt_timestamp();
-
                        start_sobel_y = alt_timestamp();
+                       start_sobel_threshold = alt_timestamp();
                        for (y = 1 ; y < (sobel_height-1) ; y++) {
                     	   for (x = 1 ; x < (sobel_width-1) ; x++) {
-                      		   sobel_y_result[y*sobel_width+x] =
+                    		   arrayindex = (y*sobel_width)+x;
+                    		   value =
                       				   1 * grayscale[(y-1)*sobel_width+(x-1)] +
 									   2 * grayscale[(y-1)*sobel_width+(x)] +
 									   1 * grayscale[(y-1)*sobel_width+(x+1)] +
-
-									   0 * grayscale[(y)*sobel_width+(x-1)] +
-									   0 * grayscale[(y)*sobel_width+(x)] +
-									   0 * grayscale[(y)*sobel_width+(x+1)] +
-
 									   -1 * grayscale[(y+1)*sobel_width+(x-1)] +
 									   -2 * grayscale[(y+1)*sobel_width+(x)] +
 									   -1 * grayscale[(y+1)*sobel_width+(x+1)];
+                    		   sum = (value < 0) ? -value : value;
+                    		   value =
+                      				   -1 * grayscale[(y-1)*sobel_width+(x-1)] +
+									   1 * grayscale[(y-1)*sobel_width+(x+1)] +
+									   -2 * grayscale[(y)*sobel_width+(x-1)]   +
+									   2 * grayscale[(y)*sobel_width+(x+1)]   +
+									   -1 * grayscale[(y+1)*sobel_width+(x-1)] +
+                      		 			1 * grayscale[(y+1)*sobel_width+(x+1)];
+                    		   sum += (value < 0) ? -value : value;
+                    		   sobel_result[arrayindex] = (sum > 128) ? 0xFF : 0;
                     	   }
                        }
                        end_sobel_y = alt_timestamp();
-
-                       start_sobel_threshold = alt_timestamp();
-                       sobel_threshold(128);
+                       end_sobel_x = alt_timestamp();
                        end_sobel_threshold = alt_timestamp();
 
                        grayscale=GetSobelResult();
@@ -212,10 +202,10 @@ int main()
 		      	  	   break;
 		      }
 
-		      printf("conv grayscale: %d\n",(end_conv_grayscale-start_conv_grayscale));
-		      printf("sobel x: %d\n",(end_sobel_x-start_sobel_x));
-		      printf("sobel y: %d\n",(end_sobel_y-start_sobel_y));
-		      printf("sobel threshold: %d\n",(end_sobel_threshold-start_sobel_threshold));
+		      printf("conv grayscale: %d\n",(int)(end_conv_grayscale-start_conv_grayscale));
+		      printf("sobel x: %d\n",(int)(end_sobel_x-start_sobel_x)/3);
+		      printf("sobel y: %d\n",(int)(end_sobel_y-start_sobel_y)/3);
+		      printf("sobel threshold: %d\n",(int)(end_sobel_threshold-start_sobel_threshold)/3);
 		  }
 	  }
   } while (1);
