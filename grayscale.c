@@ -26,10 +26,13 @@ void conv_grayscale(void *picture,
 	for (y = 0 ; y < height ; y++) {
 		for (x = 0 ; x < width ; x++) {
 			rgb = pixels[y*width+x];
+
 			gray = ((((rgb>>11)&0x1F)<<3)*27 // red part
 				+ (((rgb>>5)&0x3F)<<2)*92 // green part
 				+ (((rgb>>0)&0x1F)<<3)*9) // blue part
 				>> 7; // /128
+
+
 			IOWR_8DIRECT(grayscale_array,y*width+x,gray);
 		}
 	}

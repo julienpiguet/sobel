@@ -155,7 +155,8 @@ void sobel_complete(unsigned char *source, short threshold){
 					-1 * source[(y+1)*sobel_width+(x-1)] +
 					1 * source[(y+1)*sobel_width+(x+1)];
 			sum += (value < 0) ? -value : value;
-			sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
+			//sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
+			IOWR_8DIRECT(sobel_result,(y*sobel_width)+x,(sum > 128) ? 0xFF : 0);
 		}
 	}
 }
