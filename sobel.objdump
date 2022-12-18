@@ -35,49 +35,49 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   8 .debug_aranges 00001050  00000000  00000000  00014350  2**3
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_info   000267e6  00000000  00000000  000153a0  2**0
+  9 .debug_info   000267db  00000000  00000000  000153a0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_abbrev 00009c50  00000000  00000000  0003bb86  2**0
+ 10 .debug_abbrev 00009c43  00000000  00000000  0003bb7b  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_line   0000c444  00000000  00000000  000457d6  2**0
+ 11 .debug_line   0000c3fa  00000000  00000000  000457be  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_frame  000025e8  00000000  00000000  00051c1c  2**2
+ 12 .debug_frame  000025e8  00000000  00000000  00051bb8  2**2
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    00003dec  00000000  00000000  00054204  2**0
+ 13 .debug_str    00003dec  00000000  00000000  000541a0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_loc    00018dd7  00000000  00000000  00057ff0  2**0
+ 14 .debug_loc    00018dd7  00000000  00000000  00057f8c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_alt_sim_info 00000060  00000000  00000000  00070dc8  2**2
+ 15 .debug_alt_sim_info 00000060  00000000  00000000  00070d64  2**2
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_ranges 00001968  00000000  00000000  00070e28  2**3
+ 16 .debug_ranges 00001968  00000000  00000000  00070dc8  2**3
                   CONTENTS, READONLY, DEBUGGING
- 17 .thread_model 00000003  00000000  00000000  0007628e  2**0
+ 17 .thread_model 00000003  00000000  00000000  0007622e  2**0
                   CONTENTS, READONLY
- 18 .cpu          0000000c  00000000  00000000  00076291  2**0
+ 18 .cpu          0000000c  00000000  00000000  00076231  2**0
                   CONTENTS, READONLY
- 19 .qsys         00000001  00000000  00000000  0007629d  2**0
+ 19 .qsys         00000001  00000000  00000000  0007623d  2**0
                   CONTENTS, READONLY
- 20 .simulation_enabled 00000001  00000000  00000000  0007629e  2**0
+ 20 .simulation_enabled 00000001  00000000  00000000  0007623e  2**0
                   CONTENTS, READONLY
- 21 .sysid_hash   00000004  00000000  00000000  0007629f  2**0
+ 21 .sysid_hash   00000004  00000000  00000000  0007623f  2**0
                   CONTENTS, READONLY
- 22 .sysid_base   00000004  00000000  00000000  000762a3  2**0
+ 22 .sysid_base   00000004  00000000  00000000  00076243  2**0
                   CONTENTS, READONLY
- 23 .sysid_time   00000004  00000000  00000000  000762a7  2**0
+ 23 .sysid_time   00000004  00000000  00000000  00076247  2**0
                   CONTENTS, READONLY
- 24 .stderr_dev   00000009  00000000  00000000  000762ab  2**0
+ 24 .stderr_dev   00000009  00000000  00000000  0007624b  2**0
                   CONTENTS, READONLY
- 25 .stdin_dev    00000009  00000000  00000000  000762b4  2**0
+ 25 .stdin_dev    00000009  00000000  00000000  00076254  2**0
                   CONTENTS, READONLY
- 26 .stdout_dev   00000009  00000000  00000000  000762bd  2**0
+ 26 .stdout_dev   00000009  00000000  00000000  0007625d  2**0
                   CONTENTS, READONLY
- 27 .sopc_system_name 0000000b  00000000  00000000  000762c6  2**0
+ 27 .sopc_system_name 0000000b  00000000  00000000  00076266  2**0
                   CONTENTS, READONLY
- 28 .quartus_project_dir 00000038  00000000  00000000  000762d1  2**0
+ 28 .quartus_project_dir 00000038  00000000  00000000  00076271  2**0
                   CONTENTS, READONLY
- 29 .jdi          00005ad8  00000000  00000000  00076309  2**0
+ 29 .jdi          00005ad8  00000000  00000000  000762a9  2**0
                   CONTENTS, READONLY
- 30 .sopcinfo     00075d3a  00000000  00000000  0007bde1  2**0
+ 30 .sopcinfo     00075d3a  00000000  00000000  0007bd81  2**0
                   CONTENTS, READONLY
 SYMBOL TABLE:
 00000000 l    d  .entry	00000000 .entry
@@ -1783,12 +1783,13 @@ void conv_grayscale(void *picture,
 			gray = ALT_CI_RGB2GRAY_0(pixels[y*width+x]);
      7d8:	41c0000b 	ldhu	r7,0(r8)
      7dc:	380fc032 	custom	0,r7,r7,zero
-			IOWR_8DIRECT(grayscale_array,y*width+x,gray);
+			//IOWR_8DIRECT(grayscale_array,y*width+x,gray);
+			grayscale_array[y*width+x] = gray;
      7e0:	d0e70d17 	ldw	r3,-25548(gp)
-     7e4:	1887883a 	add	r3,r3,r2
-     7e8:	19c00025 	stbio	r7,0(r3)
-     7ec:	10800044 	addi	r2,r2,1
-     7f0:	42000084 	addi	r8,r8,2
+     7e4:	42000084 	addi	r8,r8,2
+     7e8:	1887883a 	add	r3,r3,r2
+     7ec:	19c00005 	stb	r7,0(r3)
+     7f0:	10800044 	addi	r2,r2,1
 	grayscape_height = height;
 	if (grayscale_array != NULL)
 		free(grayscale_array);
@@ -1806,9 +1807,9 @@ void conv_grayscale(void *picture,
      7fc:	2189883a 	add	r4,r4,r6
      800:	4c13883a 	add	r9,r9,r16
      804:	917ff11e 	bne	r18,r5,7cc <__alt_data_end+0xff0007cc>
-		for (x = 0 ; x < width ; x++) {
 			gray = ALT_CI_RGB2GRAY_0(pixels[y*width+x]);
-			IOWR_8DIRECT(grayscale_array,y*width+x,gray);
+			//IOWR_8DIRECT(grayscale_array,y*width+x,gray);
+			grayscale_array[y*width+x] = gray;
 		}
 	}
 }

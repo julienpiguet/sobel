@@ -26,7 +26,8 @@ void conv_grayscale(void *picture,
 	for (y = 0 ; y < height ; y++) {
 		for (x = 0 ; x < width ; x++) {
 			gray = ALT_CI_RGB2GRAY_0(pixels[y*width+x]);
-			IOWR_8DIRECT(grayscale_array,y*width+x,gray);
+			//IOWR_8DIRECT(grayscale_array,y*width+x,gray);
+			grayscale_array[y*width+x] = gray;
 		}
 	}
 }
