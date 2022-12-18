@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "io.h"
+#include <system.h>
 
 const char gx_array[3][3] = {{-1,0,1},
                              {-2,0,2},
@@ -146,7 +147,7 @@ void sobel_complete(unsigned char *source, short threshold){
 					-1 * source[(y+1)*sobel_width+(x-1)] +
 					-2 * source[(y+1)*sobel_width+(x)] +
 					-1 * source[(y+1)*sobel_width+(x+1)];
-			sum = (value < 0) ? -value : value;
+			sum = ALT_CI_ABSOLUTE_0(value);
 			value =
 					-1 * source[(y-1)*sobel_width+(x-1)] +
 					1 * source[(y-1)*sobel_width+(x+1)] +
@@ -154,7 +155,7 @@ void sobel_complete(unsigned char *source, short threshold){
 					2 * source[(y)*sobel_width+(x+1)]   +
 					-1 * source[(y+1)*sobel_width+(x-1)] +
 					1 * source[(y+1)*sobel_width+(x+1)];
-			sum += (value < 0) ? -value : value;
+			sum += ALT_CI_ABSOLUTE_0(value);
 			//sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
 			IOWR_8DIRECT(sobel_result,(y*sobel_width)+x,(sum > 128) ? 0xFF : 0);
 		}
