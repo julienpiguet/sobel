@@ -137,8 +137,32 @@ void sobel_threshold(short threshold) {
 }
 void sobel_complete(unsigned char *source, short threshold){
 	int x,y;
+	int a,b,c,d;
 	short sum,value;
 	for (y = 1 ; y < (sobel_height-1) ; y++) {
+		for (x = 1 ; x < (sobel_width-1) ; x++) {
+			a = source[(y-1)*sobel_width+(x-1)];
+			b = source[(y-1)*sobel_width+(x+1)];
+			c = source[(y+1)*sobel_width+(x-1)];
+			d = source[(y+1)*sobel_width+(x+1)];
+			value =
+					a + 2 * source[(y-1)*sobel_width+(x)] +
+					b - c - 2 * source[(y+1)*sobel_width+(x)] - d;
+			sum = ALT_CI_ABSOLUTE_0(value);
+			value =
+					b - a - 2 * source[(y)*sobel_width+(x-1)] +
+					2 * source[(y)*sobel_width+(x+1)] - c + d;
+			sum += ALT_CI_ABSOLUTE_0(value);
+			//sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
+			IOWR_8DIRECT(sobel_result,(y*sobel_width)+x,(sum > 128) ? 0xFF : 0);
+		}
+	}
+}
+
+void sobel_complete_sub(unsigned char *source, int from, int size){
+	int x,y;
+	short sum,value;
+	for (y = from+1 ; y < (from+size-1) ; y++) {
 		for (x = 1 ; x < (sobel_width-1) ; x++) {
 			value =
 					1 * source[(y-1)*sobel_width+(x-1)] +

@@ -3,25 +3,20 @@
 #include <stdlib.h>
 #include <io.h>
 #include "lcd_simple.h"
-#include "grayscale.h"
+//#include "grayscale.h"
 #include "i2c.h"
 #include "camera.h"
 #include "vga.h"
 #include "dipswitch.h"
-#include "sobel.h"
+//#include "sobel.h"
 #include "sys/alt_timestamp.h"
 #include "alt_types.h"
+#include "sobel_all.h"
 
-alt_u32 start_sobel = 0;
-alt_u32 end_sobel = 0;
-//alt_u32 start_sobel_x = 0;
-//alt_u32 end_sobel_x = 0;
-//alt_u32 start_sobel_y = 0;
-//alt_u32 end_sobel_y = 0;
-alt_u32 start_conv_grayscale = 0;
-alt_u32 end_conv_grayscale = 0;
-//alt_u32 start_sobel_threshold = 0;
-//alt_u32 end_sobel_threshold = 0;
+//alt_u32 start_sobel = 0;
+//alt_u32 end_sobel = 0;
+//alt_u32 start_conv_grayscale = 0;
+//alt_u32 end_conv_grayscale = 0;
 alt_u32 start_all = 0;
 alt_u32 end_all = 0;
 alt_u32 start_global = 0;
@@ -49,8 +44,13 @@ int main()
   cam_set_image_pointer(2,buffer3);
   cam_set_image_pointer(3,buffer4);
   enable_continues_mode();
-  init_sobel_arrays(cam_get_xsize()>>1,cam_get_ysize());
+
+
   int pixels = (cam_get_xsize()>>1) * cam_get_ysize();
+
+  //init_sobel_arrays(cam_get_xsize()>>1,cam_get_ysize());
+  //conv_grayscale_init(cam_get_xsize()>>1, cam_get_ysize());
+  sobel_all_init(cam_get_xsize()>>1, cam_get_ysize());
 
   do {
 	  if (new_image_available() != 0) {
@@ -73,6 +73,8 @@ int main()
 		      	  	   break;
 		      default:
 		    	  	   start_all = alt_timestamp();
+
+		    	  	   /*
 		    	  	   start_conv_grayscale = alt_timestamp();
 		    	  	   conv_grayscale((void *)image,
 	                                  cam_get_xsize()>>1,
@@ -84,9 +86,48 @@ int main()
                        start_sobel = alt_timestamp();
                        sobel_complete(grayscale, 128);
                        end_sobel = alt_timestamp();
+						*/
+
+
+		    	  	   /*
+		    	  	   conv_grayscale_partial((void *)image, 0, 60);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 0, 60);
+
+		    	  	   conv_grayscale_partial((void *)image, 58, 60);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 58, 60);
+
+		    	  	   conv_grayscale_partial((void *)image, 116, 60);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 116, 60);
+
+		    	  	   conv_grayscale_partial((void *)image, 174, 60);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 174, 60);
+
+		    	  	   conv_grayscale_partial((void *)image, 232, 60);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 232, 60);
+
+		    	  	   conv_grayscale_partial((void *)image, 290, 60);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 290, 60);
+
+		    	  	   conv_grayscale_partial((void *)image, 348, 36);
+		    	  	   grayscale = get_grayscale_picture();
+		    	  	   sobel_complete_sub(grayscale, 348, 36);
+						*/
+
+
+		    	  	   //sobel_all_partial((void *)image, 0, cam_get_ysize());
+		    	  	   sobel_all_complete((void *)image);
+
                        end_all = alt_timestamp();
 
-                       grayscale=GetSobelResult();
+                       //grayscale=GetSobelResult();
+                       grayscale=GetSobelAllResult();
+
 		               transfer_LCD_with_dma(&grayscale[16520],
 		      		                	cam_get_xsize()>>1,
 		      		                	cam_get_ysize(),1);
@@ -97,8 +138,8 @@ int main()
 		      	  	   break;
 		      }
 		      end_global = alt_timestamp();
-		      printf("conv grayscale: %d\n",(int)(end_conv_grayscale-start_conv_grayscale));
-		      printf("sobel: %d\n",(int)(end_sobel-start_sobel));
+		      //printf("conv grayscale: %d\n",(int)(end_conv_grayscale-start_conv_grayscale));
+		      //printf("sobel: %d\n",(int)(end_sobel-start_sobel));
 		      printf("Total: %d Cycles and %d Cycles/Pixel\n",(int)(end_all-start_all), (int)(end_all-start_all)/pixels);
 		      printf("FPS: %lfImg/s\n", 1.0L / ((double)(end_global- start_global) / ALT_CPU_CPU_FREQ));
 		  }

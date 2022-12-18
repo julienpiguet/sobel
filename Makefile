@@ -150,6 +150,7 @@ C_SRCS += lcd_simple.c
 C_SRCS += main.c
 C_SRCS += sobel.c
 C_SRCS += vga.c
+C_SRCS += sobel_all.c
 CXX_SRCS :=
 ASM_SRCS :=
 
