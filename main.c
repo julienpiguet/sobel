@@ -120,8 +120,8 @@ int main()
 						*/
 
 
-		    	  	   //sobel_all_partial((void *)image, 0, cam_get_ysize());
-		    	  	   sobel_all_complete((void *)image);
+		    	  	   sobel_all_partial((void *)image);
+		    	  	   //sobel_all_complete((void *)image);
 
                        end_all = alt_timestamp();
 

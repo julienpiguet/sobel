@@ -29,6 +29,7 @@ void sobel_all_init(int width, int height){
 	array_width = width;
 	array_height = height;
 	size = width*height;
+	printf("Sobel size: %d x %d = %d pixel\n", width, height, size);
 	if (grayscale_array != NULL)
 		free(grayscale_array);
 	grayscale_array = (unsigned char *) malloc(width* height);
@@ -42,12 +43,6 @@ void sobel_all_init(int width, int height){
 
 void sobel_all_complete(void *picture){
 
-
-
-
-
-
-
 	int x,y,pos;
 	unsigned short *pixels = (unsigned short *)picture;
 	start_conv_grayscale = alt_timestamp();
@@ -59,19 +54,12 @@ void sobel_all_complete(void *picture){
 
 	start_sobel = alt_timestamp();
 	int a,b,c,d;
-	short sum;
 	for (y = 1 ; y < (array_height-1) ; y++) {
 		for (x = 1 ; x < (array_width-1) ; x++) {
 			a = grayscale_array[(y-1)*array_width+(x-1)];
 			b = grayscale_array[(y-1)*array_width+(x+1)];
 			c = grayscale_array[(y+1)*array_width+(x-1)];
 			d = grayscale_array[(y+1)*array_width+(x+1)];
-			/*sum =
-				ALT_CI_ABSOLUTE_0(a + 2 * grayscale_array[(y-1)*array_width+(x)] +
-					b - c - 2 * grayscale_array[(y+1)*array_width+(x)] - d) +
-				ALT_CI_ABSOLUTE_0(b - a - 2 * grayscale_array[(y)*array_width+(x-1)] +
-					2 * grayscale_array[(y)*array_width+(x+1)] - c + d);*/
-			//sobel_result_a[(y*array_width)+x] = (sum > 128) ? 0xFF : 0;
 			IOWR_8DIRECT(sobel_result,(y*array_width)+x,ALT_CI_THRESHOLD_0(
 					ALT_CI_ABSOLUTE_0(a + 2 * grayscale_array[(y-1)*array_width+(x)] +
 						b - c - 2 * grayscale_array[(y+1)*array_width+(x)] - d) +
@@ -85,43 +73,39 @@ void sobel_all_complete(void *picture){
 	printf("sobel: %d\n",(int)(end_sobel-start_sobel));
 }
 
-void sobel_all_partial(void *picture, int from, int size){
-	int x,y,gray;
-	short sum,value;
+void sobel_all_partial(void *picture){
+	int i, divider = 28, sub = array_height/divider;
+	partial(picture, 0, sub,1);
+	for (i = 1; i<divider; i++){
+		partial(picture, (i * sub)-1, sub+1, 0);
+	}
+	partial(picture, divider * (sub-2), array_height%divider, 0);
+}
+
+void partial(void *picture, int from, int lines, int offsetfrom){
+	int x,y,pos, f = from*array_width, t = from*array_width+lines*array_width;
 	unsigned short *pixels = (unsigned short *)picture;
-
-
 
 	//alt_dcache_flush_all();
 	//alt_remap_cached(grayscale_array_a+from, size*array_width);
-	for (y = from ; y < from+size ; y++) {
-		for (x = 0 ; x < array_width ; x++) {
-			gray = ALT_CI_RGB2GRAY_0(pixels[y*array_width+x]);
-			grayscale_array[y*array_width+x] = gray;
-		}
+	for (pos = f ; pos < t ; pos++) {
+		grayscale_array[pos] = ALT_CI_RGB2GRAY_0(pixels[pos]);
 	}
 
 
-
-	for (y = from+1 ; y < (from+size-1) ; y++) {
+	int a,b,c,d;
+	for (y = from+offsetfrom ; y < (from+lines-1) ; y++) {
 		for (x = 1 ; x < (array_width-1) ; x++) {
-			value =
-						1 * grayscale_array[(y-1)*array_width+(x-1)] +
-						2 * grayscale_array[(y-1)*array_width+(x)] +
-						1 * grayscale_array[(y-1)*array_width+(x+1)] +
-						-1 * grayscale_array[(y+1)*array_width+(x-1)] +
-						-2 * grayscale_array[(y+1)*array_width+(x)] +
-						-1 * grayscale_array[(y+1)*array_width+(x+1)];
-			sum = ALT_CI_ABSOLUTE_0(value);
-			value =
-						-1 * grayscale_array[(y-1)*array_width+(x-1)] +
-						1 * grayscale_array[(y-1)*array_width+(x+1)] +
-						-2 * grayscale_array[(y)*array_width+(x-1)]   +
-						2 * grayscale_array[(y)*array_width+(x+1)]   +
-						-1 * grayscale_array[(y+1)*array_width+(x-1)] +
-						1 * grayscale_array[(y+1)*array_width+(x+1)];
-			sum += ALT_CI_ABSOLUTE_0(value);
-			IOWR_8DIRECT(sobel_result,(y*array_width)+x,(sum > 128) ? 0xFF : 0);
+					a = grayscale_array[(y-1)*array_width+(x-1)];
+					b = grayscale_array[(y-1)*array_width+(x+1)];
+					c = grayscale_array[(y+1)*array_width+(x-1)];
+					d = grayscale_array[(y+1)*array_width+(x+1)];
+					IOWR_8DIRECT(sobel_result,(y*array_width)+x,ALT_CI_THRESHOLD_0(
+							ALT_CI_ABSOLUTE_0(a + 2 * grayscale_array[(y-1)*array_width+(x)] +
+								b - c - 2 * grayscale_array[(y+1)*array_width+(x)] - d) +
+							ALT_CI_ABSOLUTE_0(b - a - 2 * grayscale_array[(y)*array_width+(x-1)] +
+								2 * grayscale_array[(y)*array_width+(x+1)] - c + d)
+							,128));
 		}
 	}
 }
