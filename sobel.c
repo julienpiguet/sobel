@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "io.h"
 #include <system.h>
+#include <sys/alt_cache.h>
 
 const char gx_array[3][3] = {{-1,0,1},
                              {-2,0,2},
@@ -37,7 +38,7 @@ void init_sobel_arrays(int width , int height) {
 	sobel_y_result = (short *)malloc(width*height*sizeof(short));
 	if (sobel_result != NULL)
 		free(sobel_result);
-	sobel_result = (unsigned char *)malloc(width*height*sizeof(unsigned char));
+	sobel_result = (unsigned char *)alt_uncached_malloc(width*height*sizeof(unsigned char));
 	if (sobel_rgb565 != NULL)
 		free(sobel_rgb565);
 	sobel_rgb565 = (unsigned short *)malloc(width*height*sizeof(unsigned short));
@@ -137,53 +138,84 @@ void sobel_threshold(short threshold) {
 }
 void sobel_complete(unsigned char *source, short threshold){
 	int x,y;
-	int a,b,c,d;
-	short sum,value;
+	int a,b;
+	int y1, y2, y0;
+	int p1, p2, p3, p4, p5, p6, p7, p8, p9;
 	for (y = 1 ; y < (sobel_height-1) ; y++) {
-		for (x = 1 ; x < (sobel_width-1) ; x++) {
-			a = source[(y-1)*sobel_width+(x-1)];
-			b = source[(y-1)*sobel_width+(x+1)];
-			c = source[(y+1)*sobel_width+(x-1)];
-			d = source[(y+1)*sobel_width+(x+1)];
-			value =
-					a + 2 * source[(y-1)*sobel_width+(x)] +
-					b - c - 2 * source[(y+1)*sobel_width+(x)] - d;
-			sum = ALT_CI_ABSOLUTE_0(value);
-			value =
-					b - a - 2 * source[(y)*sobel_width+(x-1)] +
-					2 * source[(y)*sobel_width+(x+1)] - c + d;
-			sum += ALT_CI_ABSOLUTE_0(value);
-			//sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
-			IOWR_8DIRECT(sobel_result,(y*sobel_width)+x,(sum > 128) ? 0xFF : 0);
+			y0 = (y-1)*sobel_width;
+		    y1 = y*sobel_width;
+		    y2 = (y+1)*sobel_width;
+		    
+			p2 = source[y0];
+			p5 = source[y1];
+			p8 = source[y2];
+
+			p3 = source[y0+1];
+			p6 = source[y1+1];
+			p9 = source[y2+1];
+
+			for (x = 1 ; x < (sobel_width-1) ; x++) {
+				p1 = p2; 
+				p4 = p5; 
+				p7 = p8; 
+
+				p2 = p3; 
+				p5 = p6; 
+				p8 = p9;
+
+				p3 = source[y0+x+1];
+				p6 = source[y1+x+1]; 
+				p9 = source[y2+x+1];
+				
+				a = p1 - p9;
+				b = p3 - p7;
+				IOWR_8DIRECT(sobel_result,y1+x,ALT_CI_THRESHOLD_0(
+						ALT_CI_ABSOLUTE_0(a + b + 2 * p2 - 2 * p8) +
+						ALT_CI_ABSOLUTE_0(b - a - 2 * p4 + 2 * p6)
+						,threshold));
+			}
 		}
-	}
 }
 
-void sobel_complete_sub(unsigned char *source, int from, int size){
+void sobel_complete_parted(unsigned char *source, short threshold, int offset, int len){
 	int x,y;
-	short sum,value;
-	for (y = from+1 ; y < (from+size-1) ; y++) {
-		for (x = 1 ; x < (sobel_width-1) ; x++) {
-			value =
-					1 * source[(y-1)*sobel_width+(x-1)] +
-					2 * source[(y-1)*sobel_width+(x)] +
-					1 * source[(y-1)*sobel_width+(x+1)] +
-					-1 * source[(y+1)*sobel_width+(x-1)] +
-					-2 * source[(y+1)*sobel_width+(x)] +
-					-1 * source[(y+1)*sobel_width+(x+1)];
-			sum = ALT_CI_ABSOLUTE_0(value);
-			value =
-					-1 * source[(y-1)*sobel_width+(x-1)] +
-					1 * source[(y-1)*sobel_width+(x+1)] +
-					-2 * source[(y)*sobel_width+(x-1)]   +
-					2 * source[(y)*sobel_width+(x+1)]   +
-					-1 * source[(y+1)*sobel_width+(x-1)] +
-					1 * source[(y+1)*sobel_width+(x+1)];
-			sum += ALT_CI_ABSOLUTE_0(value);
-			//sobel_result[(y*sobel_width)+x] = (sum > 128) ? 0xFF : 0;
-			IOWR_8DIRECT(sobel_result,(y*sobel_width)+x,(sum > 128) ? 0xFF : 0);
+	int a,b;
+	int y1, y2, y0;
+	int p1, p2, p3, p4, p5, p6, p7, p8, p9;
+	for (y = offset ; y < (offset+len) ; y++) {
+			y0 = (y-1)*sobel_width;
+		    y1 = y*sobel_width;
+		    y2 = (y+1)*sobel_width;
+
+			p2 = source[y0];
+			p5 = source[y1];
+			p8 = source[y2];
+
+			p3 = source[y0+1];
+			p6 = source[y1+1];
+			p9 = source[y2+1];
+
+			for (x = 1 ; x < (sobel_width-1) ; x++) {
+				p1 = p2;
+				p4 = p5;
+				p7 = p8;
+
+				p2 = p3;
+				p5 = p6;
+				p8 = p9;
+
+				p3 = source[y0+x+1];
+				p6 = source[y1+x+1];
+				p9 = source[y2+x+1];
+
+				a = p1 - p9;
+				b = p3 - p7;
+				IOWR_8DIRECT(sobel_result,y1+x,ALT_CI_THRESHOLD_0(
+						ALT_CI_ABSOLUTE_0(a + b + 2 * p2 - 2 * p8) +
+						ALT_CI_ABSOLUTE_0(b - a - 2 * p4 + 2 * p6)
+						,threshold));
+			}
 		}
-	}
 }
 
 unsigned short *GetSobel_rgb() {

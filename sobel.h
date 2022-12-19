@@ -16,7 +16,7 @@ void sobel_y( unsigned char *source );
 void sobel_y_with_rgb( unsigned char *source );
 void sobel_threshold(short threshold);
 void sobel_complete(unsigned char *source, short threshold);
-void sobel_complete_sub(unsigned char *source, int from, int size);
+void sobel_complete_parted(unsigned char *source, short threshold, int offset, int len);
 unsigned short *GetSobel_rgb();
 unsigned char *GetSobelResult();
 
