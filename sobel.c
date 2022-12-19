@@ -141,6 +141,7 @@ void sobel_complete(unsigned char *source, short threshold){
 	int a,b;
 	int y1, y2, y0;
 	int p1, p2, p3, p4, p5, p6, p7, p8, p9;
+	int width_len = sobel_width-1;
 	for (y = 1 ; y < (sobel_height-1) ; y++) {
 			y0 = (y-1)*sobel_width;
 		    y1 = y*sobel_width;
@@ -154,7 +155,7 @@ void sobel_complete(unsigned char *source, short threshold){
 			p6 = source[y1+1];
 			p9 = source[y2+1];
 
-			for (x = 1 ; x < (sobel_width-1) ; x++) {
+			for (x = 1 ; x < width_len ; x++) {
 				p1 = p2; 
 				p4 = p5; 
 				p7 = p8; 
@@ -170,8 +171,8 @@ void sobel_complete(unsigned char *source, short threshold){
 				a = p1 - p9;
 				b = p3 - p7;
 				IOWR_8DIRECT(sobel_result,y1+x,ALT_CI_THRESHOLD_0(
-						ALT_CI_ABSOLUTE_0(a + b + 2 * p2 - 2 * p8) +
-						ALT_CI_ABSOLUTE_0(b - a - 2 * p4 + 2 * p6)
+						ALT_CI_ABSOLUTE_0(a + b + 2 * (p2 - p8)) +
+						ALT_CI_ABSOLUTE_0(b - a + 2 * (p6 - p4))
 						,threshold));
 			}
 		}
@@ -182,6 +183,7 @@ void sobel_complete_parted(unsigned char *source, short threshold, int offset, i
 	int a,b;
 	int y1, y2, y0;
 	int p1, p2, p3, p4, p5, p6, p7, p8, p9;
+	int width_len = sobel_width-1;
 	for (y = offset ; y < (offset+len) ; y++) {
 			y0 = (y-1)*sobel_width;
 		    y1 = y*sobel_width;
@@ -195,7 +197,7 @@ void sobel_complete_parted(unsigned char *source, short threshold, int offset, i
 			p6 = source[y1+1];
 			p9 = source[y2+1];
 
-			for (x = 1 ; x < (sobel_width-1) ; x++) {
+			for (x = 1 ; x < width_len ; x++) {
 				p1 = p2;
 				p4 = p5;
 				p7 = p8;
@@ -211,8 +213,8 @@ void sobel_complete_parted(unsigned char *source, short threshold, int offset, i
 				a = p1 - p9;
 				b = p3 - p7;
 				IOWR_8DIRECT(sobel_result,y1+x,ALT_CI_THRESHOLD_0(
-						ALT_CI_ABSOLUTE_0(a + b + 2 * p2 - 2 * p8) +
-						ALT_CI_ABSOLUTE_0(b - a - 2 * p4 + 2 * p6)
+						ALT_CI_ABSOLUTE_0(a + b + 2 * (p2 - p8)) +
+						ALT_CI_ABSOLUTE_0(b - a + 2 * (p6 - p4))
 						,threshold));
 			}
 		}
