@@ -5,12 +5,27 @@
  *      Author: theo
  */
 
+#include "sobel.h"
+
+#ifdef LOAD_SOBEL
 #include <stdlib.h>
 #include <stdio.h>
 #include "io.h"
 #include <system.h>
 #include <sys/alt_cache.h>
 
+
+
+unsigned char *sobel_result;
+int sobel_width;
+int sobel_height;
+
+unsigned char *GetSobelResult() {
+	return sobel_result;
+}
+#endif
+
+#ifdef LOAD_SOBEL_OLD
 const char gx_array[3][3] = {{-1,0,1},
                              {-2,0,2},
                              {-1,0,1}};
@@ -21,10 +36,10 @@ const char gy_array[3][3] = { {1, 2, 1},
 short *sobel_x_result;
 short *sobel_y_result;
 unsigned short *sobel_rgb565;
-unsigned char *sobel_result;
-int sobel_width;
-int sobel_height;
+#endif
 
+#ifdef LOAD_SOBEL
+#ifdef LOAD_SOBEL_OLD
 void init_sobel_arrays(int width , int height) {
 	int loop;
 	sobel_width = width;
@@ -49,7 +64,24 @@ void init_sobel_arrays(int width , int height) {
 		sobel_rgb565[loop] = 0;
 	}
 }
+#else
+void init_sobel_arrays(int width , int height) {
+	int loop;
+	sobel_width = width;
+	sobel_height = height;
+	printf("Sobel size: %d x %d = %d pixel\n", width, height, width*height);
+	if (sobel_result != NULL)
+		free(sobel_result);
+	sobel_result = (unsigned char *)alt_uncached_malloc(width*height*sizeof(unsigned char));
+	for (loop = 0 ; loop < width*height ; loop++) {
+		sobel_result[loop] = 0;
+	}
+}
 
+#endif
+#endif
+
+#ifdef LOAD_ALL_SOBEL
 short sobel_mac( unsigned char *pixels,
                  int x,
                  int y,
@@ -136,6 +168,16 @@ void sobel_threshold(short threshold) {
 		}
 	}
 }
+
+
+
+unsigned short *GetSobel_rgb() {
+	return sobel_rgb565;
+}
+
+#endif
+
+#ifdef LOAD_SOBEL_COMPLETE
 void sobel_complete(unsigned char *source, short threshold){
 	int x,y;
 	int a,b;
@@ -168,7 +210,7 @@ void sobel_complete(unsigned char *source, short threshold){
 				p3 = source[y0+x];
 				p6 = source[yc];
 				p9 = source[y2+x];
-				
+
 				a = p1 - p9;
 				b = p3 - p7;
 				IOWR_8DIRECT(sobel_result,yc-1,ALT_CI_THRESHOLD_0(
@@ -178,7 +220,9 @@ void sobel_complete(unsigned char *source, short threshold){
 			}
 		}
 }
+#endif
 
+#ifdef LOAD_SOBEL_PARTED
 void sobel_complete_parted(unsigned char *source, short threshold, int offset, int len){
 	int x,y;
 	int a,b;
@@ -220,11 +264,4 @@ void sobel_complete_parted(unsigned char *source, short threshold, int offset, i
 			}
 		}
 }
-
-unsigned short *GetSobel_rgb() {
-	return sobel_rgb565;
-}
-
-unsigned char *GetSobelResult() {
-	return sobel_result;
-}
+#endif

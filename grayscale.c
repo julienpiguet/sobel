@@ -5,6 +5,9 @@
  *      Author: theo
  */
 
+#include "grayscale.h"
+
+#ifdef LOAD_GRAYSCALE
 #include <stdlib.h>
 #include <io.h>
 #include <system.h>
@@ -17,24 +20,43 @@ int grayscale_width = 0;
 int grayscape_height = 0;
 int size_int = 0;
 
-void conv_grayscale(void *picture,
-		            int width,
-		            int height) {
-	register int pos = 0,pxl = 0;
-	unsigned int *pixels = (unsigned int *)picture;
+void conv_grayscale(void *picture) {
+	register unsigned int * pos = (unsigned int *)(grayscale_array_int);
+	register int pxl = 0;
+	register unsigned int * end = (unsigned int *)(grayscale_array_int+size_int);
+	register unsigned int *pixels = (unsigned int *)picture;
 
-	while (pos < size_int) {
+	while (pos < end) {
 
-			grayscale_array_int[pos] = ALT_CI_MULTIPLE_RGB2GRAY_0(pixels[pxl],pixels[pxl+1]);
+			*pos = ALT_CI_MULTIPLE_RGB2GRAY_0(pixels[pxl++],pixels[pxl++]);
 			pos++;
-			pxl+=2;
 			//IOWR_32DIRECT(grayscale_array_int, pos, ALT_CI_MULTIPLE_RGB2GRAY_0(pixels[pxl],pixels[pxl+1]));
-			//pxl = pixels[p2];
-			//grayscale_array[pos] = ALT_CI_RGB2GRAY_0(pxl&65535);
-			//grayscale_array[pos+1] = ALT_CI_RGB2GRAY_0((pxl>>16));
-			//grayscale_array[pos] = ALT_CI_RGB2GRAY_0(pixels[pos]);
 	}
 }
+
+/*
+INIT
+     774:	d1e70b17 	ldw	r7,-25556(gp)
+     778:	d0a70f17 	ldw	r2,-25540(gp)
+     77c:	39cf883a 	add	r7,r7,r7
+     780:	39cf883a 	add	r7,r7,r7
+     784:	11cf883a 	add	r7,r2,r7
+     788:	11c0092e 	bgeu	r2,r7,7b0 <conv_grayscale+0x3c>
+     78c:	21400104 	addi	r5,r4,4
+
+LOOP
+     790:	20c00017 	ldw	r3,0(r4)
+     794:	29800017 	ldw	r6,0(r5)
+     798:	1987c0f2 	custom	3,r3,r3,r6
+     79c:	10c00015 	stw	r3,0(r2)
+     7a0:	10800104 	addi	r2,r2,4
+     7a4:	21000204 	addi	r4,r4,8
+     7a8:	29400204 	addi	r5,r5,8
+     7ac:	11fff836 	bltu	r2,r7,790 <__alt_data_end+0xff000790>
+
+RETURN
+     7b0:	f800283a 	ret
+ */
 
 void conv_grayscale_init(int width, int height){
 		grayscale_width = width;
@@ -47,18 +69,7 @@ void conv_grayscale_init(int width, int height){
 		size_int = grayscape_height*grayscale_width_int;
 }
 
-void conv_grayscale_partial(void *picture, int offset, int len){
-	int x,y,pos,pxl,y0;
-	unsigned int *pixels = (unsigned int *)picture;
-	for (y = offset ; y < offset+len ; y++) {
-		y0 = y*grayscale_width_int;
-				for (x = 0 ; x < grayscale_width_int ; x++) {
-					pos = y0+x;
-					pxl = pos<<1;
-					grayscale_array_int[pos] = ALT_CI_MULTIPLE_RGB2GRAY_0(pixels[pxl],pixels[pxl+1]);
-				}
-	}
-}
+
 
 
 int get_grayscale_width() {
@@ -72,5 +83,19 @@ int get_grayscale_height() {
 unsigned char *get_grayscale_picture() {
 	return grayscale_array;
 }
+#endif
 
-
+#ifdef LOAD_GRAYSCALE_PARTED
+void conv_grayscale_partial(void *picture, int offset, int len){
+	int x,y,pos,pxl,y0;
+	unsigned int *pixels = (unsigned int *)picture;
+	for (y = offset ; y < offset+len ; y++) {
+		y0 = y*grayscale_width_int;
+				for (x = 0 ; x < grayscale_width_int ; x++) {
+					pos = y0+x;
+					pxl = pos<<1;
+					grayscale_array_int[pos] = ALT_CI_MULTIPLE_RGB2GRAY_0(pixels[pxl],pixels[pxl+1]);
+				}
+	}
+}
+#endif

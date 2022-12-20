@@ -12,12 +12,14 @@
 #include "sys/alt_timestamp.h"
 #include "alt_types.h"
 #include <sys/alt_cache.h>
-//#include "sobel_all.h"
+#include "sobel_all.h"
 
+#ifdef LOAD_SOBEL_COMPLETE
 alt_u32 start_sobel = 0;
 alt_u32 end_sobel = 0;
 alt_u32 start_conv_grayscale = 0;
 alt_u32 end_conv_grayscale = 0;
+#endif
 alt_u32 start_all = 0;
 alt_u32 end_all = 0;
 alt_u32 start_global = 0;
@@ -49,9 +51,15 @@ int main()
 
   int pixels = (cam_get_xsize()>>1) * cam_get_ysize();
 
-  init_sobel_arrays(cam_get_xsize()>>1,cam_get_ysize());
-  conv_grayscale_init(cam_get_xsize()>>1, cam_get_ysize());
-  //sobel_all_init(cam_get_xsize()>>1, cam_get_ysize());
+	#ifdef LOAD_SOBEL
+	  init_sobel_arrays(cam_get_xsize()>>1,cam_get_ysize());
+	#endif
+	#ifdef LOAD_GRAYSCALE
+	  conv_grayscale_init(cam_get_xsize()>>1, cam_get_ysize());
+	#endif
+	#ifdef LOAD_SOBEL_ALL
+	  sobel_all_init(cam_get_xsize()>>1, cam_get_ysize());
+	#endif
 
   do {
 	  if (new_image_available() != 0) {
@@ -75,11 +83,10 @@ int main()
 		      default:
 		    	  	   start_all = alt_timestamp();
 
-
+						#if defined(LOAD_SOBEL) && defined(LOAD_GRAYSCALE)
+						#if defined(LOAD_SOBEL_COMPLETE)
 		    	  	   start_conv_grayscale = alt_timestamp();
-		    	  	   conv_grayscale((void *)image,
-	                                  cam_get_xsize()>>1,
-	                                  cam_get_ysize());
+		    	  	   conv_grayscale((void *)image);
 		    	  	   end_conv_grayscale = alt_timestamp();
 
                        grayscale = get_grayscale_picture();
@@ -87,11 +94,11 @@ int main()
                        start_sobel = alt_timestamp();
                        sobel_complete(grayscale, 128);
                        end_sobel = alt_timestamp();
-
+						#endif
 
                        //**************************************
 
-		    	  	   /*
+						#if defined(LOAD_SOBEL_PARTED) && defined(LOAD_GRAYSCALE_PARTED)
 		    	  	   grayscale = get_grayscale_picture();
 
 		    	  	   //alt_remap_cached (grayscale+0, 8192);
@@ -193,20 +200,32 @@ int main()
                        //alt_remap_cached (grayscale+366, 9216);
                        conv_grayscale_partial((void *)image, 368, 16);
                        sobel_complete_parted(grayscale, 128, 367, 16);
-                       */
-
                        //**************************************
+						#endif
+						#endif
 
 
+						#ifdef LOAD_SOBEL_ALL_COMPLETE
+                       	   sobel_all_complete((void *)image);
+						#endif
 
-		    	  	   //sobel_all_partial((void *)image);
-                       //sobel_all_complete((void *)image);
-		    	  	   //sobel_all_complete_fusion((void *)image);
+						#ifdef LOAD_SOBEL_ALL_PARTED
+							sobel_all_partial((void *)image);
+						#endif
+
+						#ifdef LOAD_SOBEL_ALL_FUSION
+							sobel_all_complete_fusion((void *)image);
+						#endif
 
                        end_all = alt_timestamp();
 
-                       grayscale=GetSobelResult();
-                       //grayscale=GetSobelAllResult();
+						#ifdef LOAD_GRAYSCALE
+                       	   grayscale=GetSobelResult();
+						#endif
+
+						#ifdef LOAD_SOBEL_ALL
+                       	   grayscale=GetSobelAllResult();
+						#endif
 
 		               transfer_LCD_with_dma(&grayscale[16520],
 		      		                	cam_get_xsize()>>1,
@@ -218,8 +237,10 @@ int main()
 		      	  	   break;
 		      }
 		      end_global = alt_timestamp();
+			#ifdef LOAD_SOBEL_COMPLETE
 		      printf("conv grayscale: %d\n",(int)(end_conv_grayscale-start_conv_grayscale));
 		      printf("sobel: %d\n",(int)(end_sobel-start_sobel));
+			#endif
 		      printf("Total: %d Cycles and %d Cycles/Pixel\n",(int)(end_all-start_all), (int)(end_all-start_all)/pixels);
 		      printf("FPS: %lfImg/s\n", 1.0L / ((double)(end_global- start_global) / ALT_CPU_CPU_FREQ));
 		  }

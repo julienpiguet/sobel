@@ -5,7 +5,7 @@
  *      Author: Julien
  */
 
-
+#ifdef LOAD_SOBEL_ALL
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>
@@ -45,6 +45,12 @@ void sobel_all_init(int width, int height){
 	}
 }
 
+unsigned char *GetSobelAllResult() {
+	return sobel_result;
+}
+#endif
+
+#ifdef LOAD_SOBEL_ALL_COMPLETE
 void sobel_all_complete(void *picture){
 	int a,b;
 	int x,y,pos,pxl;
@@ -101,7 +107,9 @@ void sobel_all_complete(void *picture){
 	printf("conv grayscale: %d\n",(int)(end_conv_grayscale_a-start_conv_grayscale_a));
 	printf("sobel: %d\n",(int)(end_sobel_a-start_sobel_a));
 }
+#endif
 
+#ifdef LOAD_SOBEL_ALL_PARTED
 void sobel_all_partial(void *picture){
 	    int a,b;
 		int x,y,pos,pxl;
@@ -986,35 +994,9 @@ void sobel_all_partial(void *picture){
 
 
 }
+#endif
 
-void partial(void *picture, int fromgray, int fromsobel, int linesgray, int linessobel){
-	int x,y,pos, f = fromgray*array_width, t = fromgray*array_width+linesgray*array_width;
-	unsigned short *pixels = (unsigned short *)picture;
-
-	//alt_dcache_flush_all();
-	//alt_remap_cached(grayscale_array_a+from, size*array_width);
-	for (pos = f ; pos < t ; pos++) {
-		grayscale_array[pos] = ALT_CI_RGB2GRAY_0(pixels[pos]);
-	}
-
-
-	int a,b,c,d;
-	for (y = fromsobel+1 ; y < (fromsobel+linessobel-1) ; y++) {
-		for (x = 1 ; x < (array_width-1) ; x++) {
-					a = grayscale_array[(y-1)*array_width+(x-1)];
-					b = grayscale_array[(y-1)*array_width+(x+1)];
-					c = grayscale_array[(y+1)*array_width+(x-1)];
-					d = grayscale_array[(y+1)*array_width+(x+1)];
-					IOWR_8DIRECT(sobel_result,(y*array_width)+x,ALT_CI_THRESHOLD_0(
-							ALT_CI_ABSOLUTE_0(a + 2 * grayscale_array[(y-1)*array_width+(x)] +
-								b - c - 2 * grayscale_array[(y+1)*array_width+(x)] - d) +
-							ALT_CI_ABSOLUTE_0(b - a - 2 * grayscale_array[(y)*array_width+(x-1)] +
-								2 * grayscale_array[(y)*array_width+(x+1)] - c + d)
-							,128));
-		}
-	}
-}
-
+#ifdef LOAD_SOBEL_ALL_FUSION
 void sobel_all_complete_fusion(void *picture){
 
 	int x,y,pos;
@@ -1061,7 +1043,4 @@ void sobel_all_complete_fusion(void *picture){
 	}
 
 }
-unsigned char *GetSobelAllResult() {
-	return sobel_result;
-}
-
+#endif
