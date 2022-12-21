@@ -242,7 +242,7 @@ int main()
 		      printf("sobel: %d\n",(int)(end_sobel-start_sobel));
 			#endif
 		      printf("Total: %d Cycles and %d Cycles/Pixel\n",(int)(end_all-start_all), (int)(end_all-start_all)/pixels);
-		      printf("FPS: %lfImg/s\n", 1.0L / ((double)(end_global- start_global) / ALT_CPU_CPU_FREQ));
+		      printf("FPS: %lfImg/s\n", 1.0L / ((double)(end_global- start_global) / ALT_CPU_FREQ));
 		  }
 	  }
   } while (1);

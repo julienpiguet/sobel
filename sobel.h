@@ -8,6 +8,7 @@
 
 //#define LOAD_SOBEL_OLD
 #define LOAD_SOBEL_COMPLETE
+#define LOAD_SOBEL_COMPLETE_ONE_LOOP
 //#define LOAD_SOBEL_PARTED
 
 #if defined(LOAD_SOBEL_OLD) || defined(LOAD_SOBEL_COMPLETE) || defined(LOAD_SOBEL_PARTED)
@@ -42,4 +43,7 @@ void sobel_complete(unsigned char *source, short threshold);
 void sobel_complete_parted(unsigned char *source, short threshold, int offset, int len);
 #endif
 
+#ifdef LOAD_SOBEL_CHUNCK
+void sobel_complete_chunck(unsigned char *source, short threshold, int offset_x, int offset_y, int width, int height);
+#endif
 #endif /* SOBEL_H_ */

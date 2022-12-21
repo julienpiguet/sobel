@@ -99,3 +99,19 @@ void conv_grayscale_partial(void *picture, int offset, int len){
 	}
 }
 #endif
+
+#ifdef LOAD_GRAYSCALE_CHUNCK
+void conv_grayscale_chunck(unsigned char *source, int offset_x, int offset_y, int width, int height){
+	int x,y,pos,pxl,y0;
+		unsigned int *pixels = (unsigned int *)picture;
+		for (y = offset_y ; y < offset_y+height ; y++) {
+			y0 = y*grayscale_width_int;
+					for (x = offset_x ; x < grayscale_width_int ; x++) {
+						pos = y0+x;
+						pxl = pos<<1;
+						grayscale_array_int[pos] = ALT_CI_MULTIPLE_RGB2GRAY_0(pixels[pxl],pixels[pxl+1]);
+					}
+		}
+	}
+}
+#endif
